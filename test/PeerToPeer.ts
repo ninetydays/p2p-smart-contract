@@ -6,11 +6,11 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Lock", function () {
+describe("PeerToPeer", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearLockFixture() {
+  async function deployOneYearPeerToPeerFixture() {
     const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
     const ONE_GWEI = 1_000_000_000;
 
@@ -20,28 +20,30 @@ describe("Lock", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    const PeerToPeer = await ethers.getContractFactory("PeerToPeer");
+    const lock = await PeerToPeer.deploy(unlockTime, { value: lockedAmount });
 
     return { lock, unlockTime, lockedAmount, owner, otherAccount };
   }
 
   describe("Deployment", function () {
     it("Should set the right unlockTime", async function () {
-      const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
+      const { lock, unlockTime } = await loadFixture(
+        deployOneYearPeerToPeerFixture
+      );
 
       expect(await lock.unlockTime()).to.equal(unlockTime);
     });
 
     it("Should set the right owner", async function () {
-      const { lock, owner } = await loadFixture(deployOneYearLockFixture);
+      const { lock, owner } = await loadFixture(deployOneYearPeerToPeerFixture);
 
       expect(await lock.owner()).to.equal(owner.address);
     });
 
     it("Should receive and store the funds to lock", async function () {
       const { lock, lockedAmount } = await loadFixture(
-        deployOneYearLockFixture
+        deployOneYearPeerToPeerFixture
       );
 
       expect(await ethers.provider.getBalance(lock.target)).to.equal(
@@ -52,17 +54,17 @@ describe("Lock", function () {
     it("Should fail if the unlockTime is not in the future", async function () {
       // We don't use the fixture here because we want a different deployment
       const latestTime = await time.latest();
-      const Lock = await ethers.getContractFactory("Lock");
-      await expect(Lock.deploy(latestTime, { value: 1 })).to.be.revertedWith(
-        "Unlock time should be in the future"
-      );
+      const PeerToPeer = await ethers.getContractFactory("PeerToPeer");
+      await expect(
+        PeerToPeer.deploy(latestTime, { value: 1 })
+      ).to.be.revertedWith("Unlock time should be in the future");
     });
   });
 
   describe("Withdrawals", function () {
     describe("Validations", function () {
       it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployOneYearLockFixture);
+        const { lock } = await loadFixture(deployOneYearPeerToPeerFixture);
 
         await expect(lock.withdraw()).to.be.revertedWith(
           "You can't withdraw yet"
@@ -71,7 +73,7 @@ describe("Lock", function () {
 
       it("Should revert with the right error if called from another account", async function () {
         const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployOneYearLockFixture
+          deployOneYearPeerToPeerFixture
         );
 
         // We can increase the time in Hardhat Network
@@ -85,7 +87,7 @@ describe("Lock", function () {
 
       it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
         const { lock, unlockTime } = await loadFixture(
-          deployOneYearLockFixture
+          deployOneYearPeerToPeerFixture
         );
 
         // Transactions are sent using the first signer by default
@@ -98,7 +100,7 @@ describe("Lock", function () {
     describe("Events", function () {
       it("Should emit an event on withdrawals", async function () {
         const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployOneYearLockFixture
+          deployOneYearPeerToPeerFixture
         );
 
         await time.increaseTo(unlockTime);
@@ -112,7 +114,7 @@ describe("Lock", function () {
     describe("Transfers", function () {
       it("Should transfer the funds to the owner", async function () {
         const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployOneYearLockFixture
+          deployOneYearPeerToPeerFixture
         );
 
         await time.increaseTo(unlockTime);
