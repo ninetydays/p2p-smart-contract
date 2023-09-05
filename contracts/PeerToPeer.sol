@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 struct Request {
     uint amount;
@@ -19,7 +19,10 @@ struct Loan {
 }
 
 contract PeerToPeer {
+    address[] private applicants;
     mapping(address => Request) private requests;
+
+    address[] private borrowers;
     mapping(address => Loan) private loans;
 
     event Requested(
@@ -37,6 +40,39 @@ contract PeerToPeer {
         uint payoff
     );
 
+    function removeFromArray(address[] storage arr, address value) private {
+        for (uint i = 0; i < arr.length - 1; i++) {
+            if (arr[i] == value) {
+                delete arr[i];
+                break;
+            }
+        }
+    }
+
+    function getRequests() public view returns (Request[] memory) {
+        if (applicants.length == 0) {
+            return new Request[](0);
+        }
+        Request[] memory newArray = new Request[](applicants.length);
+
+        for (uint i = 0; i < applicants.length - 1; i++) {
+            newArray[i] = requests[applicants[i]];
+        }
+        return newArray;
+    }
+
+    function getLoans() public view returns (Loan[] memory) {
+        if (borrowers.length == 0) {
+            return new Loan[](0);
+        }
+        Loan[] memory newArray = new Loan[](borrowers.length);
+
+        for (uint i = 0; i < borrowers.length - 1; i++) {
+            newArray[i] = loans[borrowers[i]];
+        }
+        return newArray;
+    }
+
     function request(uint amount, uint duration, uint payoff) public {
         require(
             requests[msg.sender].amount > 0,
@@ -50,6 +86,8 @@ contract PeerToPeer {
             duration: duration,
             payoff: payoff
         });
+
+        applicants.push(msg.sender);
 
         emit Requested(msg.sender, amount, duration, payoff);
     }
@@ -71,6 +109,8 @@ contract PeerToPeer {
             borrower: borrower
         });
         emit Paid(msg.sender, borrower, item.amount);
+        removeFromArray(applicants, borrower);
+        borrowers.push(borrower);
         delete requests[borrower];
     }
 
@@ -79,6 +119,7 @@ contract PeerToPeer {
         (bool succ, ) = loan.lender.call{value: loan.payoff + loan.amount}("");
         require(succ, "Failed to send Ether");
         emit Repaid(loan.lender, msg.sender, loan.amount, loan.payoff);
+        removeFromArray(borrowers, msg.sender);
         delete loans[msg.sender];
     }
 }

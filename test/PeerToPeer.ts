@@ -7,123 +7,50 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 describe("PeerToPeer", function () {
-  // We define a fixture to reuse the same setup in every test.
-  // We use loadFixture to run this setup once, snapshot that state,
-  // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearPeerToPeerFixture() {
-    const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    const ONE_GWEI = 1_000_000_000;
-
-    const lockedAmount = ONE_GWEI;
-    const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
+  async function deployFixture() {
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, lender, borrower] = await ethers.getSigners();
 
     const PeerToPeer = await ethers.getContractFactory("PeerToPeer");
-    const lock = await PeerToPeer.deploy(unlockTime, { value: lockedAmount });
+    const lock = await PeerToPeer.deploy();
 
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
+    return { lock, owner, lender, borrower };
   }
 
-  describe("Deployment", function () {
-    it("Should set the right unlockTime", async function () {
-      const { lock, unlockTime } = await loadFixture(
-        deployOneYearPeerToPeerFixture
-      );
-
-      expect(await lock.unlockTime()).to.equal(unlockTime);
+  describe("deployment", function () {
+    it("should set the right balance", async function () {
+      const { lock } = await loadFixture(deployFixture);
+      expect(await ethers.provider.getBalance(lock.target)).to.equal(0);
     });
 
-    it("Should set the right owner", async function () {
-      const { lock, owner } = await loadFixture(deployOneYearPeerToPeerFixture);
-
-      expect(await lock.owner()).to.equal(owner.address);
+    it("should set the empty request list", async function () {
+      const { lock } = await loadFixture(deployFixture);
+      expect(await lock.getRequests()).to.deep.equals([]);
     });
 
-    it("Should receive and store the funds to lock", async function () {
-      const { lock, lockedAmount } = await loadFixture(
-        deployOneYearPeerToPeerFixture
-      );
-
-      expect(await ethers.provider.getBalance(lock.target)).to.equal(
-        lockedAmount
-      );
-    });
-
-    it("Should fail if the unlockTime is not in the future", async function () {
-      // We don't use the fixture here because we want a different deployment
-      const latestTime = await time.latest();
-      const PeerToPeer = await ethers.getContractFactory("PeerToPeer");
-      await expect(
-        PeerToPeer.deploy(latestTime, { value: 1 })
-      ).to.be.revertedWith("Unlock time should be in the future");
+    it("should set the empty loan list", async function () {
+      const { lock } = await loadFixture(deployFixture);
+      expect(await lock.getLoans()).to.deep.equals([]);
     });
   });
 
-  describe("Withdrawals", function () {
-    describe("Validations", function () {
-      it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployOneYearPeerToPeerFixture);
+  describe("Request", function () {
+    it("should request a loan", async function () {});
 
-        await expect(lock.withdraw()).to.be.revertedWith(
-          "You can't withdraw yet"
-        );
-      });
+    it("should be rejected if amount is not duration", async function () {});
 
-      it("Should revert with the right error if called from another account", async function () {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployOneYearPeerToPeerFixture
-        );
-
-        // We can increase the time in Hardhat Network
-        await time.increaseTo(unlockTime);
-
-        // We use lock.connect() to send a transaction from another account
-        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-          "You aren't the owner"
-        );
-      });
-
-      it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-        const { lock, unlockTime } = await loadFixture(
-          deployOneYearPeerToPeerFixture
-        );
-
-        // Transactions are sent using the first signer by default
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).not.to.be.reverted;
-      });
-    });
-
-    describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployOneYearPeerToPeerFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-      });
-    });
-
-    describe("Transfers", function () {
-      it("Should transfer the funds to the owner", async function () {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployOneYearPeerToPeerFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).to.changeEtherBalances(
-          [owner, lock],
-          [lockedAmount, -lockedAmount]
-        );
-      });
-    });
+    it("should be rejected if amount is not valid", async function () {});
   });
+
+  describe("Cancel", function () {
+    it("should cancel existing loan request", async function () {});
+  });
+
+  describe("Pay", function () {
+    it("should transfer money to borrower", async function () {});
+    it("should withdraw money from lender", async function () {});
+    it("should remove the request from the list", async function () {});
+  });
+
+  describe("Repay", function () {});
 });
