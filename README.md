@@ -1,13 +1,9 @@
-# Sample Hardhat Project
+# p2p-smart-contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This repo implements basic P2P lending running on the etherium networks
 
-Try running some of the following tasks:
+## backend
+Smart contract
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+## frontend
+web UI
