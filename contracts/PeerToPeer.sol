@@ -40,10 +40,15 @@ contract PeerToPeer {
         uint payoff
     );
 
+    fallback() external payable {}
+
+    receive() external payable {}
+
     function removeFromArray(address[] storage arr, address value) private {
-        for (uint i = 0; i < arr.length - 1; i++) {
+        for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == value) {
-                delete arr[i];
+                arr[i] = arr[arr.length - 1];
+                arr.pop();
                 break;
             }
         }
@@ -55,7 +60,7 @@ contract PeerToPeer {
         }
         Request[] memory newArray = new Request[](applicants.length);
 
-        for (uint i = 0; i < applicants.length - 1; i++) {
+        for (uint i = 0; i < applicants.length; i++) {
             newArray[i] = requests[applicants[i]];
         }
         return newArray;
@@ -67,7 +72,7 @@ contract PeerToPeer {
         }
         Loan[] memory newArray = new Loan[](borrowers.length);
 
-        for (uint i = 0; i < borrowers.length - 1; i++) {
+        for (uint i = 0; i < borrowers.length; i++) {
             newArray[i] = loans[borrowers[i]];
         }
         return newArray;
@@ -75,7 +80,7 @@ contract PeerToPeer {
 
     function request(uint amount, uint duration, uint payoff) public {
         require(
-            requests[msg.sender].amount > 0,
+            requests[msg.sender].amount == 0,
             "You can request only one loan"
         );
         require(amount > 0, "amount has to be bigger than 0");
@@ -94,6 +99,7 @@ contract PeerToPeer {
 
     function cancel() public {
         delete requests[msg.sender];
+        removeFromArray(applicants, msg.sender);
         emit Cancelled(msg.sender);
     }
 
@@ -101,6 +107,7 @@ contract PeerToPeer {
         Request memory item = requests[borrower];
         (bool succ, ) = borrower.call{value: item.amount}("");
         require(succ, "Failed to send Ether");
+
         loans[borrower] = Loan({
             amount: item.amount,
             duration: item.duration,
