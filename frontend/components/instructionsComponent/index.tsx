@@ -18,7 +18,6 @@ export default function InstructionsComponent() {
           href={"https://createweb3dapp.alchemy.com/#components"}
         >
           <div className={styles.button}>
-            {/* <img src="https://static.alchemyapi.io/images/cw3d/Icon%20Medium/lightning-square-contained-m.svg" width={"20px"} height={"20px"} /> */}
             <p>Add Components</p>
           </div>
         </a>
@@ -27,7 +26,6 @@ export default function InstructionsComponent() {
           href={"https://createweb3dapp.alchemy.com/#templates"}
         >
           <div className={styles.button}>
-            {/* <img src="https://static.alchemyapi.io/images/cw3d/Icon%20Medium/lightning-square-contained-m.svg" width={"20px"} height={"20px"} /> */}
             <p>Explore Templates</p>
           </div>
         </a>
@@ -46,7 +44,6 @@ export default function InstructionsComponent() {
         </a>
         <a>
           <div className={styles.button}>
-            {/* <img src="https://static.alchemyapi.io/images/cw3d/Icon%20Medium/lightning-square-contained-m.svg" width={"20px"} height={"20px"} /> */}
             <p>Contribute</p>
           </div>
         </a>
