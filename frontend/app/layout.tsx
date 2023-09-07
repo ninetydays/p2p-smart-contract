@@ -1,8 +1,10 @@
 "use client";
+
+import "@blueprintjs/core/lib/css/blueprint.css";
+import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import { WagmiConfig, createConfig, configureChains } from "wagmi";
 import { ConnectKitProvider } from "connectkit";
-import Navbar from "@/components/instructionsComponent/navigation/navbar";
-import Footer from "@/components/instructionsComponent/navigation/footer";
+import { Navbar, Footer } from "@/components/navigation";
 import { publicProvider } from "wagmi/providers/public";
 import { hardhat } from "wagmi/chains";
 import { InjectedConnector } from "@wagmi/core/connectors/injected";
@@ -13,14 +15,13 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 );
 
 const config = createConfig({
+  autoConnect: true,
   connectors: [new InjectedConnector({ chains })],
   publicClient,
   webSocketPublicClient,
 });
 
-type Props = {
-  children: React.ReactNode;
-};
+type Props = { children: React.ReactNode };
 
 export default function RootLayout({ children }: Props) {
   return (
@@ -32,7 +33,6 @@ export default function RootLayout({ children }: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                minHeight: "105vh",
               }}
             >
               <Navbar />
