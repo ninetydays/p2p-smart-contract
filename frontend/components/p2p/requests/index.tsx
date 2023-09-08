@@ -33,7 +33,7 @@ const Requests = () => {
         <span>{error && error.message}</span>
       ) : (
         <>
-          {(data as Array<RequestType>).map((request) => (
+          {(data as Array<RequestType> || []).map((request) => (
             <RequestCard key={String(request.applicant)} request={request} />
           ))}
           <div className={styles.addContainer}>

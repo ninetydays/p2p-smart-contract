@@ -2,7 +2,7 @@
 
 import { ConnectKitButton } from "connectkit";
 
-import styles from "./Navbar.module.css";
+import styles from "./navbar.module.css";
 export function Navbar() {
   return (
     <nav className={styles.navbar}>

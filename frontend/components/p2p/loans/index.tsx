@@ -34,7 +34,7 @@ const Loans = () => {
       {isError ? (
         <span>{error && error.message}</span>
       ) : (
-        (data as Array<LoanType>).map((loan) => (
+        (data as Array<LoanType> || []).map((loan) => (
           <LoanCard key={String(loan.borrower)} loan={loan} />
         ))
       )}
