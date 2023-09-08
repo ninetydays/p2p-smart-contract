@@ -1,0 +1,11 @@
+.itemContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.requestItem {
+  font-weight: 100;
+}

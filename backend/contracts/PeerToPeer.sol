@@ -8,6 +8,7 @@ struct Request {
     uint amount;
     uint duration;
     uint payoff;
+    address payable applicant;
 }
 
 struct Loan {
@@ -89,7 +90,8 @@ contract PeerToPeer {
         requests[msg.sender] = Request({
             amount: amount,
             duration: duration,
-            payoff: payoff
+            payoff: payoff,
+            applicant: payable(msg.sender)
         });
 
         applicants.push(msg.sender);
