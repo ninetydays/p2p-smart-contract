@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useEffect } from "react";
 import { Button } from "@blueprintjs/core";
 import { LoanType } from "@/types";
 import { repayABI } from "@/abis";
@@ -28,31 +28,21 @@ export const RepayButton = ({ loan }: Props) => {
     args: [],
   });
 
-  const checkStatus = useCallback(() => {
-    const process = (): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (isSuccess) {
-          resolve();
-        } else if (isError) {
-          reject(error?.message);
-        } else {
-          return new Promise((res) =>
-            setTimeout(() => {
-              res(1);
-            }, 500)
-          ).then(() => process());
-        }
-      });
-    };
-    process();
-  }, [isSuccess, isError, error]);
+  useEffect(() => {
+    if (isSuccess && write) {
+      write();
+    }
+  }, [write, isSuccess]);
+
+  useEffect(() => {
+    if (isError && error) {
+      alert(error.message);
+    }
+  }, [isError, error]);
 
   const onRepay = () => {
     if (sendTransactionAsync) {
-      sendTransactionAsync()
-        .then(checkStatus)
-        .then(() => write?.())
-        .catch((err) => console.error(err));
+      sendTransactionAsync().catch((err) => console.error(err));
     }
   };
 
